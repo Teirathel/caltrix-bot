@@ -10,10 +10,10 @@ It reads events from a Notion database and updates a single pinned-like embed me
 - Updates the same message (no spam)
 
 ## Setup (per server)
-1) Run `/skz setup` to set staff channel + thread IDs
-2) Run `/skz notion` with a Notion database link
+1) Run `/caltrix setup` to set staff channel + thread IDs
+2) Run `/caltrix notion` with a Notion database link
 3) In Notion, open DB → Share → invite the integration name shown in env (`NOTION_INTEGRATION_NAME`)
-4) Run `/skz sync`
+4) Run `/caltrix sync`
 
 ## Local Run
 ```bash
@@ -21,3 +21,4 @@ npm install
 cp .env.example .env
 # fill in DISCORD_TOKEN + NOTION_TOKEN
 npm start
+
