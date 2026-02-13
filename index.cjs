@@ -62,10 +62,10 @@ function setGuildCfg(guildId, patch) {
 function requireGuildCfg(guildId) {
   const cfg = getGuildCfg(guildId);
   if (!cfg?.staffChannelId || !cfg?.threads?.thisMonth) {
-    throw new Error("This server is not configured. Run /skz setup first.");
+    throw new Error("This server is not configured. Run /caltrix setup first.");
   }
   if (!cfg?.notion?.databaseId) {
-    throw new Error("Notion DB not configured. Run /skz notion set <database_link> first.");
+    throw new Error("Notion DB not configured. Run /caltrix notion set <database_link> first.");
   }
   return cfg;
 }
@@ -357,8 +357,8 @@ async function publishSchedule(discord, threadId, databaseId, monthKey, metaKey,
 // ======================================================
 // SLASH COMMANDS (ADMIN ONLY)
 // ======================================================
-const skzCommand = new SlashCommandBuilder()
-  .setName("skz")
+const CaltrixCommand = new SlashCommandBuilder()
+  .setName("caltrix")
   .setDescription("Caltrix schedule bot (admin only)")
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
 
@@ -369,7 +369,7 @@ const skzCommand = new SlashCommandBuilder()
       .addChannelOption((o) =>
         o
           .setName("staff_channel")
-          .setDescription("Channel where /skz commands are allowed")
+          .setDescription("Channel where /caltrix commands are allowed")
           .setRequired(true)
       )
       .addStringOption((o) =>
@@ -432,7 +432,7 @@ const skzCommand = new SlashCommandBuilder()
       )
   );
 
-const commands = [skzCommand.toJSON()];
+const commands = [caltrixCommand.toJSON()];
 
 // ======================================================
 // DISCORD CLIENT
@@ -462,7 +462,7 @@ discord.once("ready", async () => {
 discord.on("interactionCreate", async (interaction) => {
   try {
     if (!interaction.isChatInputCommand()) return;
-    if (interaction.commandName !== "skz") return;
+    if (interaction.commandName !== "caltrix") return;
 
     const guildId = interaction.guildId;
     if (!guildId) {
@@ -523,7 +523,7 @@ discord.on("interactionCreate", async (interaction) => {
         content:
           `Saved Notion DB for this server.\n\n` +
           `**Next step (required):** Open that Notion database → **Share** → invite the integration **${integrationName}**.\n\n` +
-          `Then run: **/skz sync**\n\n` +
+          `Then run: **/caltrix sync**\n\n` +
           `Stored DB ID: \`${dbId}\``,
         ephemeral: true,
       });
@@ -615,7 +615,7 @@ discord.on("interactionCreate", async (interaction) => {
       msg =
         "Error: I cannot access that Notion database.\n" +
         `Make sure you opened the database in Notion → **Share** → invited the integration **${integrationName}**.\n` +
-        "Then try /skz sync again.";
+        "Then try /caltrix sync again.";
     }
 
     if (interaction.deferred || interaction.replied) {
@@ -627,3 +627,4 @@ discord.on("interactionCreate", async (interaction) => {
 });
 
 discord.login(process.env.DISCORD_TOKEN);
+
