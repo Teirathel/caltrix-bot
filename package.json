@@ -1,0 +1,17 @@
+{
+  "name": "caltrix",
+  "version": "1.0.0",
+  "description": "Notion-powered schedule publisher for Discord threads (multi-server configurable).",
+  "main": "index.cjs",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.cjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "discord.js": "^14.19.3",
+    "dotenv": "^17.2.1"
+  }
+}
