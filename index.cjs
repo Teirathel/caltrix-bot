@@ -437,7 +437,7 @@ const CaltrixCommand = new SlashCommandBuilder()
       )
   );
 
-const commands = [caltrixCommand.toJSON()];
+const commands = [CaltrixCommand.toJSON()];
 
 // ======================================================
 // DISCORD CLIENT
@@ -632,5 +632,6 @@ discord.on("interactionCreate", async (interaction) => {
 });
 
 discord.login(process.env.DISCORD_TOKEN);
+
 
 
