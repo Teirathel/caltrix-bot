@@ -17,8 +17,13 @@ console.log("RUNNING FILE:", __filename, "VERSION: 2026-02-13-a");
 // ======================================================
 // CONFIG STORAGE (per guild)
 // ======================================================
-const GUILD_CFG_FILE = path.join(process.cwd(), "guild-config.json");
-const META_FILE = path.join(process.cwd(), "meta.json");
+const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), "data");
+
+// Railway volume mount
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+
+const GUILD_CFG_FILE = path.join(DATA_DIR, "guild-config.json");
+const META_FILE = path.join(DATA_DIR, "meta.json");
 
 function loadJson(file, fallback) {
   try {
@@ -627,4 +632,5 @@ discord.on("interactionCreate", async (interaction) => {
 });
 
 discord.login(process.env.DISCORD_TOKEN);
+
 
