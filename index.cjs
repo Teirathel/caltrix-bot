@@ -292,6 +292,8 @@ function fmtLine(evt) {
     evt.type === "Comeback" ? "🔔 " :
     evt.type === "Release" ? "💿 " :
     evt.type === "Event" ? "📍 " :
+    evt.type === "Concert" ? "🎤 ":
+    evt.type === "Debut" ? "✨ ":
     "";
 
   // Clean metadata: Artist • Members • Location
@@ -632,6 +634,7 @@ discord.on("interactionCreate", async (interaction) => {
 });
 
 discord.login(process.env.DISCORD_TOKEN);
+
 
 
 
