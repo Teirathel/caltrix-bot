@@ -301,7 +301,7 @@ function fmtLine(evt) {
   if (evt.location) metaParts.push(evt.location);
 
   const meta = metaParts.length ? ` — ${metaParts.join(" • ")}` : "";
-  const link = evt.link ? ` · ${evt.link}` : "";
+  const link = evt.link ? ` • [🔗 Link](${evt.link})` : "";
 
   return `[${mon} ${day}${timePart}] ${emoji}${evt.title}${meta}${link}`.trim();
 }
@@ -632,6 +632,7 @@ discord.on("interactionCreate", async (interaction) => {
 });
 
 discord.login(process.env.DISCORD_TOKEN);
+
 
 
 
