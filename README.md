@@ -15,24 +15,25 @@ Caltrix uses the Type property in your Notion database to determine how events a
 
 Supported values:
 
-Birthday
-Comeback
-Debut
-Concert
-Event
-Award
-Release
+* Birthday
+* Comeback
+* Debut
+* Concert
+* Event
+* Award
+* Release
 
 Each type is rendered with an icon:
 
-🎂 Birthday
-⚠️ Comeback
-✨ Debut
-🎤 Concert
-🎪 Event
-🏆 Award
-💿 Release
-📅 Event Format in Discord
+- 🎂 Birthday
+- ⚠️ Comeback
+- ✨ Debut
+- 🎤 Concert
+- 🎪 Event
+- 🏆 Award
+- 💿 Release
+
+##📅 Event Format in Discord
 
 Each Notion entry is displayed as:
 
@@ -44,14 +45,14 @@ Example:
 [MAR 17] 🎤 NMIXX World Tour — NMIXX • Madrid
 ↳ 🔗 View Details
 
-⚠️ Important
+##⚠️ Important
 The Type field must match one of the supported values
 The Date field is required
 Unsupported types will display without an icon
 The Link field is optional
 Artist and Member fields can be text or relations
 
-🧠 Recommended Notion Structure
+##🧠 Recommended Notion Structure
 
 Minimum required:
 
