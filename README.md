@@ -9,7 +9,7 @@ It reads events from a Notion database and updates a single pinned-like embed me
 - Per-server Notion database configuration (admins paste DB link)
 - Updates the same message (no spam)
 
-##🧩 Supported Event Types
+## 🧩 Supported Event Types
 
 Caltrix uses the Type property in your Notion database to determine how events are displayed in Discord.
 
@@ -33,7 +33,7 @@ Each type is rendered with an icon:
 - 🏆 Award
 - 💿 Release
 
-##📅 Event Format in Discord
+## 📅 Event Format in Discord
 
 Each Notion entry is displayed as:
 
@@ -45,14 +45,14 @@ Example:
 [MAR 17] 🎤 NMIXX World Tour — NMIXX • Madrid
 ↳ 🔗 View Details
 
-##⚠️ Important
+## ⚠️ Important
 The Type field must match one of the supported values
 The Date field is required
 Unsupported types will display without an icon
 The Link field is optional
 Artist and Member fields can be text or relations
 
-##🧠 Recommended Notion Structure
+## 🧠 Recommended Notion Structure
 
 Minimum required:
 
