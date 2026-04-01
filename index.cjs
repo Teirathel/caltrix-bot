@@ -294,6 +294,7 @@ function fmtLine(evt) {
     evt.type === "Event" ? "📍 " :
     evt.type === "Concert" ? "🎤 ":
     evt.type === "Debut" ? "✨ ":
+    evt.type === "Award" ? "🏆 ":
     "";
 
   // Clean metadata: Artist • Members • Location
