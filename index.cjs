@@ -309,14 +309,40 @@ function fmtLine(evt) {
   return `[${mon} ${day}${timePart}] ${emoji}${evt.title}${meta}${link}`.trim();
 }
 
-function buildEmbed(monthKey, events, tzLabel = "KST") {
-  const title = `Schedule — ${fmtMonthTitle(monthKey)}`;
-  const body = events.length ? events.map(fmtLine).join("\n") : "_No upcoming entries._";
+const EMBED_DESCRIPTION_LIMIT = 3900; // Discord limit is 4096, keep a safety buffer
 
-  return new EmbedBuilder()
-    .setTitle(title)
-    .setDescription(body)
-    .setFooter({ text: `Synced from Notion • ${tzLabel}` });
+function splitLinesIntoPages(lines, limit = EMBED_DESCRIPTION_LIMIT) {
+  const pages = [];
+  let current = "";
+
+  for (const line of lines) {
+    // If one single event line is already too long, shorten it so Discord does not reject it.
+    const safeLine = line.length > limit ? `${line.slice(0, limit - 20)}…` : line;
+    const next = current ? `${current}\n${safeLine}` : safeLine;
+
+    if (next.length > limit) {
+      if (current) pages.push(current);
+      current = safeLine;
+    } else {
+      current = next;
+    }
+  }
+
+  if (current) pages.push(current);
+  return pages.length ? pages : ["_No upcoming entries._"];
+}
+
+function buildEmbeds(monthKey, events, tzLabel = "KST") {
+  const title = `Schedule — ${fmtMonthTitle(monthKey)}`;
+  const lines = events.length ? events.map(fmtLine) : ["_No upcoming entries._"];
+  const pages = splitLinesIntoPages(lines);
+
+  return pages.map((body, index) =>
+    new EmbedBuilder()
+      .setTitle(pages.length === 1 ? title : `${title} (${index + 1}/${pages.length})`)
+      .setDescription(body)
+      .setFooter({ text: `Synced from Notion • ${tzLabel}` })
+  );
 }
 
 // ======================================================
@@ -329,22 +355,46 @@ function saveMetaAll(meta) {
   saveJson(META_FILE, meta);
 }
 
-async function ensureScheduleMessage(channelOrThread, metaKey) {
+async function ensureScheduleMessages(channelOrThread, metaKey, neededCount) {
   const meta = loadMetaAll();
-  const msgId = meta[metaKey]?.messageId;
 
-  if (msgId) {
+  // Backwards compatible: your old config saved one messageId, the new version saves messageIds.
+  const oldIds = meta[metaKey]?.messageIds || (meta[metaKey]?.messageId ? [meta[metaKey].messageId] : []);
+  const keptIds = [];
+  const messages = [];
+
+  for (let i = 0; i < neededCount; i++) {
+    let msg = null;
+
+    if (oldIds[i]) {
+      try {
+        msg = await channelOrThread.messages.fetch(oldIds[i]);
+      } catch {
+        // message was deleted or cannot be accessed anymore, so create a replacement below
+      }
+    }
+
+    if (!msg) {
+      msg = await channelOrThread.send("Initializing schedule…");
+    }
+
+    keptIds.push(msg.id);
+    messages.push(msg);
+  }
+
+  // If last sync needed more messages than this one, delete the extra old schedule messages.
+  for (const extraId of oldIds.slice(neededCount)) {
     try {
-      return await channelOrThread.messages.fetch(msgId);
+      const extraMsg = await channelOrThread.messages.fetch(extraId);
+      await extraMsg.delete();
     } catch {
-      // recreate
+      // already gone, ignore
     }
   }
 
-  const created = await channelOrThread.send("Initializing schedule…");
-  meta[metaKey] = { messageId: created.id };
+  meta[metaKey] = { messageId: keptIds[0], messageIds: keptIds };
   saveMetaAll(meta);
-  return created;
+  return messages;
 }
 
 async function publishSchedule(discord, threadId, databaseId, monthKey, metaKey, tzLabel) {
@@ -355,10 +405,13 @@ async function publishSchedule(discord, threadId, databaseId, monthKey, metaKey,
   const thread = await discord.channels.fetch(threadId);
   if (!thread) throw new Error(`Thread not found or no access: ${threadId}`);
 
-  const msg = await ensureScheduleMessage(thread, metaKey);
-  const embed = buildEmbed(monthKey, events, tzLabel);
+  const embeds = buildEmbeds(monthKey, events, tzLabel);
+  const messages = await ensureScheduleMessages(thread, metaKey, embeds.length);
 
-  await msg.edit({ content: "", embeds: [embed] });
+  for (let i = 0; i < embeds.length; i++) {
+    await messages[i].edit({ content: "", embeds: [embeds[i]] });
+  }
+
   return events.length;
 }
 
@@ -635,8 +688,3 @@ discord.on("interactionCreate", async (interaction) => {
 });
 
 discord.login(process.env.DISCORD_TOKEN);
-
-
-
-
-
