@@ -354,6 +354,16 @@ function loadMetaAll() {
 function saveMetaAll(meta) {
   saveJson(META_FILE, meta);
 }
+function clearMetaForKey(metaKey) {
+  const meta = loadMetaAll();
+  delete meta[metaKey];
+  saveMetaAll(meta);
+}
+function clearMetaForKey(metaKey) {
+  const meta = loadMetaAll();
+  delete meta[metaKey];
+  saveMetaAll(meta);
+}
 
 async function ensureScheduleMessages(channelOrThread, metaKey, neededCount) {
   const meta = loadMetaAll();
@@ -397,8 +407,26 @@ async function ensureScheduleMessages(channelOrThread, metaKey, neededCount) {
   return messages;
 }
 
-async function publishSchedule(discord, threadId, databaseId, monthKey, metaKey, tzLabel) {
+async function publishSchedule(discord, threadId, databaseId, monthKey, metaKey, tzLabel, refresh = false) {
   if (!threadId) return 0;
+
+  // On refresh: delete old messages and wipe saved IDs so fresh ones are posted
+  if (refresh) {
+    const meta = loadMetaAll();
+    const oldIds = meta[metaKey]?.messageIds || (meta[metaKey]?.messageId ? [meta[metaKey].messageId] : []);
+    if (oldIds.length) {
+      const thread = await discord.channels.fetch(threadId);
+      for (const id of oldIds) {
+        try {
+          const msg = await thread.messages.fetch(id);
+          await msg.delete();
+        } catch {
+          // already gone, ignore
+        }
+      }
+    }
+    clearMetaForKey(metaKey);
+  }
 
   const events = await queryNotionForMonth(databaseId, monthKey);
 
@@ -489,6 +517,12 @@ const CaltrixCommand = new SlashCommandBuilder()
         o
           .setName("tz")
           .setDescription("Footer label (e.g. KST)")
+          .setRequired(false)
+      )
+      .addBooleanOption((o) =>
+        o
+          .setName("refresh")
+          .setDescription("Delete old messages and post fresh ones (use on the 1st of each month)")
           .setRequired(false)
       )
   );
@@ -616,6 +650,7 @@ discord.on("interactionCreate", async (interaction) => {
 
       const scope = (interaction.options.getString("scope") || "this").toLowerCase();
       const tzLabel = interaction.options.getString("tz") || "KST";
+      const refresh = interaction.options.getBoolean("refresh") || false;
 
       const now = new Date();
       const thisMonth = monthKeyFromDate(now);
@@ -628,16 +663,16 @@ discord.on("interactionCreate", async (interaction) => {
       await interaction.deferReply({ ephemeral: true });
 
       const doThis = async () =>
-        publishSchedule(discord, t.thisMonth, databaseId, thisMonth, `${guildId}:thisMonth`, tzLabel);
+        publishSchedule(discord, t.thisMonth, databaseId, thisMonth, `${guildId}:thisMonth`, tzLabel, refresh);
 
       const doLast = async () =>
         t.lastMonth
-          ? publishSchedule(discord, t.lastMonth, databaseId, lastMonth, `${guildId}:lastMonth`, tzLabel)
+          ? publishSchedule(discord, t.lastMonth, databaseId, lastMonth, `${guildId}:lastMonth`, tzLabel, refresh)
           : 0;
 
       const doNext = async () =>
         t.nextMonth
-          ? publishSchedule(discord, t.nextMonth, databaseId, nextMonth, `${guildId}:nextMonth`, tzLabel)
+          ? publishSchedule(discord, t.nextMonth, databaseId, nextMonth, `${guildId}:nextMonth`, tzLabel, refresh)
           : 0;
 
       if (scope === "all") {
